@@ -305,41 +305,34 @@ fun MangaCard(
                         style = MaterialTheme.typography.labelSmall,
                         color = if (manga.status == "Ongoing") Color(0xFF4CAF50) else Color.Gray
                     )
-                }
-
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Button(
-                        onClick = onReadClick,
-                        modifier = Modifier
-                            .width(150.dp)
-                            .height(38.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        )
-                    ) {
-                        Icon(
-                            Icons.Default.MenuBook,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            "Read Now",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                    
                     Text(
                         text = manga.latestChapter,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Button(
+                    onClick = onReadClick,
+                    modifier = Modifier
+                        .width(150.dp)
+                        .height(38.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.MenuBook,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        "Read Now",
+                        style = MaterialTheme.typography.labelMedium
                     )
                 }
             }
