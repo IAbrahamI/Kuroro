@@ -1,30 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
-                android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+
+    <!-- Stylized Fancy Manga Icon -->
+    <group
+        android:name="manga_icon"
+        android:translateX="48"
+        android:translateY="54"
+        android:rotation="-12"> <!-- Adjusted X translation to center it better -->
+
+        <group
+            android:translateX="-30"
+            android:translateY="-35">
+
+            <!-- Book Shadow (Inner depth) -->
+            <path
+                android:fillColor="#22000000"
+                android:pathData="M8,12 c0,-3.3 2.7,-6 6,-6 h44 c3.3,0 6,2.7 6,6 v56 c0,3.3 -2.7,6 -6,6 h-44 c-3.3,0 -6,-2.7 -6,-6 z"
+                android:translateX="2"
+                android:translateY="2" />
+
+            <!-- Main Book Body with Gradient -->
+            <path
+                android:pathData="M8,10 c0,-3.3 2.7,-6 6,-6 h44 c3.3,0 6,2.7 6,6 v56 c0,3.3 -2.7,6 -6,6 h-44 c-3.3,0 -6,-2.7 -6,-6 z">
+                <aapt:attr name="android:fillColor">
+                    <gradient
+                        android:startX="8"
+                        android:startY="10"
+                        android:endX="64"
+                        android:endY="72"
+                        android:type="linear">
+                        <item android:offset="0" android:color="#9D50BB" /> <!-- Deep Violet -->
+                        <item android:offset="1" android:color="#6E48AA" /> <!-- Royal Purple -->
+                    </gradient>
+                </aapt:attr>
+            </path>
+
+            <!-- Book Spine Accent -->
+            <path
+                android:fillColor="#BB86FC"
+                android:pathData="M8,10 v56 c0,3.3 2.7,6 6,6 h5 v-68 h-5 c-3.3,0 -6,2.7 -6,6 z" />
+
+            <!-- Hand-drawn style 'M' for Manga -->
+            <path
+                android:fillColor="#FFFFFF"
+                android:fillAlpha="0.9"
+                android:pathData="M22,25 l8,22 l8,-22 l8,22 l8,-22 v28 h-5 v-18 l-7,18 h-8 l-7,-18 v18 h-5 z" />
+
+            <!-- Glossy Highlight -->
+            <path
+                android:pathData="M16,4 h40 c3.3,0 6,2.7 6,6 v10 l-46,-16 z">
+                <aapt:attr name="android:fillColor">
+                    <gradient
+                        android:startX="16"
+                        android:startY="4"
+                        android:endX="62"
+                        android:endY="20"
+                        android:type="linear">
+                        <item android:offset="0" android:color="#44FFFFFF" />
+                        <item android:offset="1" android:color="#00FFFFFF" />
+                    </gradient>
+                </aapt:attr>
+            </path>
+
+        </group>
+    </group>
 </vector>
