@@ -58,4 +58,34 @@ class MangaRepository {
             emptyList()
         }
     }
+
+    suspend fun addManga(name: String): Result<Unit> {
+        return try {
+            service.addManga(name)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteManga(name: String): Result<Unit> {
+        return try {
+            service.deleteManga(name)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Result.failure(e)
+        }
+    }
+
+    suspend fun fetchAllUpdates(): Result<Unit> {
+        return try {
+            service.fetchAllUpdates()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Result.failure(e)
+        }
+    }
 }

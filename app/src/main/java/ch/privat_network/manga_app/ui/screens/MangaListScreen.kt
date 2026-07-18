@@ -7,7 +7,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -38,13 +41,59 @@ fun MangaListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val isManualFetching by viewModel.isManualFetching.collectAsState()
+    val showAddDialog by viewModel.showAddDialog.collectAsState()
+    val mangaNameInput by viewModel.mangaNameInput.collectAsState()
+    val isAddingManga by viewModel.isAddingManga.collectAsState()
     val context = LocalContext.current
 
     // Using Scaffold is the best practice for handling system bars and content padding
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        floatingActionButton = {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Manual Fetch/Sync Button
+                SmallFloatingActionButton(
+                    onClick = { viewModel.manualFetch() },
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = Color.White
+                ) {
+                    if (isManualFetching) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(Icons.Default.Refresh, contentDescription = "Sync Server")
+                    }
+                }
+
+                // Add Manga Button
+                FloatingActionButton(
+                    onClick = { viewModel.onOpenAddDialog() },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Manga")
+                }
+            }
+        }
     ) { innerPadding ->
+        if (showAddDialog) {
+            AddMangaDialog(
+                mangaName = mangaNameInput,
+                isAdding = isAddingManga,
+                onNameChange = { viewModel.onMangaNameChange(it) },
+                onConfirm = { viewModel.addManga() },
+                onDismiss = { viewModel.onCloseAddDialog() }
+            )
+        }
+
         when (uiState) {
             is MangaUiState.Loading -> {
                 Box(
@@ -85,6 +134,9 @@ fun MangaListScreen(
                                 onReadClick = {
                                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(manga.url))
                                     context.startActivity(intent)
+                                },
+                                onDeleteClick = {
+                                    viewModel.deleteManga(manga)
                                 }
                             )
                         }
@@ -114,9 +166,63 @@ fun MangaListScreen(
 }
 
 @Composable
+fun AddMangaDialog(
+    mangaName: String,
+    isAdding: Boolean,
+    onNameChange: (String) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add Manga") },
+        text = {
+            Column {
+                Text("Add Manga:", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = mangaName,
+                    onValueChange = onNameChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Manga name...") },
+                    singleLine = true,
+                    enabled = !isAdding
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                enabled = mangaName.isNotBlank() && !isAdding,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                if (isAdding) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Add")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !isAdding) {
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurface
+    )
+}
+
+@Composable
 fun MangaCard(
     manga: Manga,
-    onReadClick: () -> Unit
+    onReadClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     // Format the date string from "2026-02-07T00:00:00" to "Feb 7, 2026"
     val formattedDate = remember(manga.date) {
@@ -158,26 +264,42 @@ fun MangaCard(
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text(
-                        text = manga.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = "Author: ${manga.author}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                        maxLines = 1
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Updated on $formattedDate",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(end = 40.dp)) {
+                        Text(
+                            text = manga.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "Author: ${manga.author}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            maxLines = 1
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Updated on $formattedDate",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onDeleteClick,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Manga",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
 
                 Row(
