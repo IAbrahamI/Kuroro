@@ -239,13 +239,13 @@ fun MangaCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(170.dp), // Increased slightly to fit the date
+            .heightIn(min = 180.dp), // Flexible height but consistent minimum
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
-        Row(modifier = Modifier.fillMaxSize()) {
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(manga.imageUrl)
@@ -253,7 +253,7 @@ fun MangaCard(
                     .build(),
                 contentDescription = manga.title,
                 modifier = Modifier
-                    .width(110.dp)
+                    .width(115.dp) // Slightly wider for better aspect ratio
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)),
                 contentScale = ContentScale.Crop
@@ -261,71 +261,62 @@ fun MangaCard(
             Column(
                 modifier = Modifier
                     .padding(12.dp)
-                    .fillMaxSize(),
+                    .fillMaxHeight()
+                    .weight(1f),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(end = 40.dp)) {
+                Column {
+                    Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = manga.title,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            modifier = Modifier.padding(end = 32.dp) // Room for trash icon
                         )
-                        Text(
-                            text = "Author: ${manga.author}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                            maxLines = 1
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "Updated on $formattedDate",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
+                        IconButton(
+                            onClick = onDeleteClick,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
-
-                    IconButton(
-                        onClick = onDeleteClick,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete Manga",
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                    Text(
+                        text = "By ${manga.author}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Updated: $formattedDate",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+                    Text(
+                        text = "Status: ${manga.status}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (manga.status == "Ongoing") Color(0xFF4CAF50) else Color.Gray
+                    )
                 }
 
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = manga.latestChapter,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = manga.status,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (manga.status == "Ongoing") Color(0xFF4CAF50) else Color.Gray
-                        )
-                    }
-
                     Button(
                         onClick = onReadClick,
                         modifier = Modifier
                             .width(150.dp)
-                            .height(40.dp),
+                            .height(38.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -335,14 +326,21 @@ fun MangaCard(
                         Icon(
                             Icons.Default.MenuBook,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(6.dp))
                         Text(
                             "Read Now",
                             style = MaterialTheme.typography.labelMedium
                         )
                     }
+                    
+                    Text(
+                        text = manga.latestChapter,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
