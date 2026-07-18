@@ -1,4 +1,4 @@
-# Manga App
+# Kuroro
 
 A modern, fast, and lightweight Android application for managing and reading your personal manga collection. This app is built with Kotlin and Jetpack Compose, designed to connect seamlessly with a private FastAPI backend.
 

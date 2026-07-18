@@ -175,7 +175,7 @@ fun AddMangaDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Manga") },
+        title = { Text("Add to Kuroro") },
         text = {
             Column {
                 Text("Add Manga:", style = MaterialTheme.typography.bodyMedium)
