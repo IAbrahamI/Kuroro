@@ -2,18 +2,15 @@ package ch.privat_network.manga_app.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -23,14 +20,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.privat_network.manga_app.R
 import ch.privat_network.manga_app.domain.Manga
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -41,46 +41,28 @@ fun MangaListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
-    val isManualFetching by viewModel.isManualFetching.collectAsState()
     val showAddDialog by viewModel.showAddDialog.collectAsState()
     val mangaNameInput by viewModel.mangaNameInput.collectAsState()
     val isAddingManga by viewModel.isAddingManga.collectAsState()
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(viewModel) {
+        viewModel.messages.collect { snackbarHostState.showSnackbar(it) }
+    }
 
     // Using Scaffold is the best practice for handling system bars and content padding
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            FloatingActionButton(
+                onClick = { viewModel.onOpenAddDialog() },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White
             ) {
-                // Manual Fetch/Sync Button
-                SmallFloatingActionButton(
-                    onClick = { viewModel.manualFetch() },
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = Color.White
-                ) {
-                    if (isManualFetching) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Icon(Icons.Default.Refresh, contentDescription = "Sync Server")
-                    }
-                }
-
-                // Add Manga Button
-                FloatingActionButton(
-                    onClick = { viewModel.onOpenAddDialog() },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Manga")
-                }
+                Icon(painterResource(R.drawable.ic_add), contentDescription = "Add Manga")
             }
         }
     ) { innerPadding ->
@@ -106,10 +88,11 @@ fun MangaListScreen(
                 }
             }
             is MangaUiState.Success -> {
-                val list = (uiState as MangaUiState.Success).mangaList
+                val success = uiState as MangaUiState.Success
+                val list = success.mangaList
                 PullToRefreshBox(
                     isRefreshing = isRefreshing,
-                    onRefresh = { viewModel.fetchManga(isRefresh = true) },
+                    onRefresh = { viewModel.refresh() },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(bottom = innerPadding.calculateBottomPadding()) // Handle nav bar
@@ -125,6 +108,18 @@ fun MangaListScreen(
                         ),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        if (success.isOffline) {
+                            item(key = "offline") { OfflineNote(fetchedAt = success.fetchedAt) }
+                        }
+                        if (list.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "No mangas yet. Add one with the + button.",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    modifier = Modifier.fillMaxWidth().padding(top = 32.dp)
+                                )
+                            }
+                        }
                         items(
                             items = list,
                             key = { it.id } // Optimization: Helps Compose uniquely identify items
@@ -154,7 +149,7 @@ fun MangaListScreen(
                 ) {
                     Text(text = message, color = Color.Red, modifier = Modifier.padding(16.dp))
                     Button(
-                        onClick = { viewModel.fetchManga() },
+                        onClick = { viewModel.loadManga() },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Text("Retry")
@@ -163,6 +158,24 @@ fun MangaListScreen(
             }
         }
     }
+}
+
+@Composable
+fun OfflineNote(fetchedAt: Long) {
+    val time = remember(fetchedAt) {
+        DateTimeFormatter.ofPattern("MMM d, HH:mm", Locale.getDefault())
+            .format(Instant.ofEpochMilli(fetchedAt).atZone(ZoneId.systemDefault()))
+    }
+    Text(
+        text = "Offline · saved list from $time",
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    )
 }
 
 @Composable
@@ -247,10 +260,7 @@ fun MangaCard(
     ) {
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(manga.imageUrl)
-                    .crossfade(true)
-                    .build(),
+                model = manga.imageUrl,
                 contentDescription = manga.title,
                 modifier = Modifier
                     .width(115.dp) // Slightly wider for better aspect ratio
@@ -280,7 +290,7 @@ fun MangaCard(
                                 .size(28.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Delete,
+                                painter = painterResource(R.drawable.ic_delete),
                                 contentDescription = "Delete",
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 modifier = Modifier.size(18.dp)
@@ -325,7 +335,7 @@ fun MangaCard(
                     )
                 ) {
                     Icon(
-                        Icons.Default.MenuBook,
+                        painterResource(R.drawable.ic_menu_book),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
