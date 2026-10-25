@@ -7,8 +7,9 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface MangaService {
-    @GET("mangas") // Updated to match your FastAPI endpoint
-    suspend fun getMangaList(): List<List<Any>>
+    // Each manga is a positional JSON array (see MangaRepository.toManga)
+    @GET("mangas")
+    suspend fun getMangaList(): List<List<Any?>>
 
     @POST("mangas/{manga_name}")
     suspend fun addManga(@Path("manga_name") name: String)

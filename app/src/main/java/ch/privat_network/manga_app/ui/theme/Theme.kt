@@ -1,21 +1,16 @@
 package ch.privat_network.manga_app.ui.theme
 
 import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
+// One black & purple scheme, used in both light and dark system mode
+private val ColorScheme = darkColorScheme(
     primary = LightPurple,
     secondary = DeepPurple,
     tertiary = Pink80,
@@ -27,43 +22,14 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = OnDarkSurface,
 )
 
-// We use a dark-leaning scheme even for light mode as per user request for "Black & Purple"
-private val LightColorScheme = darkColorScheme(
-    primary = DeepPurple,
-    secondary = LightPurple,
-    tertiary = Pink40,
-    background = TrueBlack,
-    surface = DarkSurface,
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onBackground = Color.White,
-    onSurface = OnDarkSurface,
-)
-
 @Composable
 fun MangaAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false, // Set to false to prioritize our Black & Purple theme
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = Color.Transparent.toArgb()
-            window.navigationBarColor = Color.Transparent.toArgb()
-            
             val controller = WindowCompat.getInsetsController(window, view)
             controller.isAppearanceLightStatusBars = false // Set to false for white icons (on dark background)
             controller.isAppearanceLightNavigationBars = false
@@ -71,7 +37,7 @@ fun MangaAppTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = ColorScheme,
         typography = Typography,
         content = content
     )

@@ -24,3 +24,11 @@ Thumbs.db
 # Project-specific ignores
 .artifacts/
 .kotlin/
+
+# Project-local Android SDK and Gradle caches
+.android-build/
+
+# Signing keys (the debug key lives in .android-build/ and must be kept)
+*.jks
+*.keystore
+keystore.properties
